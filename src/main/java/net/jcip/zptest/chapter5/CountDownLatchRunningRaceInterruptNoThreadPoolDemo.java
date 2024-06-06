@@ -1,26 +1,31 @@
 package net.jcip.zptest.chapter5;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.*;
 
 /**
  * 模拟跑步，多个线程同时起跑，如果超过了规定时间，则认为不合格。
- * 使用线程池-管理子线程
+ * 子线程不使用线程池-直接使用 List 存储子线程。
+ *
  */
-public class CountDownLatchRunningRaceInterruptDemo {
+public class CountDownLatchRunningRaceInterruptNoThreadPoolDemo {
 
     public long timeTasks (int nThread, final Runnable task) throws InterruptedException {
         final CountDownLatch startLatch = new CountDownLatch(1);
         final CountDownLatch endLatch = new CountDownLatch(nThread);
 
-        final ExecutorService executorService = Executors.newFixedThreadPool(nThread);
+        final List<Thread> threadList = new LinkedList<Thread>();
 
         for (int i = 0; i < nThread; i++) {
-            executorService.submit(new Runnable() {
+            Thread thread = new Thread(new Runnable() {
                 public void run() {
                     try {
                         // 等发起的指令。
                         startLatch.await();
                         task.run();
+                        System.out.println("线程：" + Thread.currentThread().getName() + " 运行完毕");
                     } catch (Exception e) {
                         System.out.println("线程: " + Thread.currentThread().getName() + " 被强制退出了");
 
@@ -32,8 +37,9 @@ public class CountDownLatchRunningRaceInterruptDemo {
                         endLatch.countDown();
                     }
                 }
-            });
-
+            }, "thread-" + i);
+            threadList.add(thread);
+            thread.start();
         }
 
         long startTime = System.currentTimeMillis();
@@ -45,9 +51,11 @@ public class CountDownLatchRunningRaceInterruptDemo {
         scheduler.schedule(new Runnable() {
 
             public void run() {
-                if (endLatch.getCount() > 0) {
-                    // 如果有线程还没完成，则中断它们
-                    executorService.shutdownNow();
+                for (Thread thread : threadList) {
+                    if (thread.isAlive()) {
+                        thread.interrupt();
+                        System.out.println("Interrupting task thread. id: " + thread.getName());
+                    }
                 }
             }
         }, 1, TimeUnit.SECONDS);
@@ -61,8 +69,7 @@ public class CountDownLatchRunningRaceInterruptDemo {
 //            Thread.currentThread().interrupt(); // 保留中断状态
         }
 
-        // 关闭ExecutorService和ScheduledExecutorService
-        executorService.shutdown(); // 注意：这不会立即停止正在执行的任务
+        // 关闭ScheduledExecutorService
         scheduler.shutdown();
 
 
@@ -71,7 +78,7 @@ public class CountDownLatchRunningRaceInterruptDemo {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        CountDownLatchRunningRaceInterruptDemo demo = new CountDownLatchRunningRaceInterruptDemo();
+        CountDownLatchRunningRaceInterruptNoThreadPoolDemo demo = new CountDownLatchRunningRaceInterruptNoThreadPoolDemo();
         int nThread = 10;
         long l = demo.timeTasks(nThread, new Runnable() {
             public void run() {
@@ -79,6 +86,7 @@ public class CountDownLatchRunningRaceInterruptDemo {
                     long l1 = (long) (Math.random() * 2000);
                     System.out.println("sleep 毫秒数：" + l1);
                     Thread.sleep(l1);
+                    System.out.println("sleep 毫秒数：" + l1 + "end");
                 } catch (InterruptedException e) {
                     System.out.println("over time interrupt!!!!" + e.getMessage());
                 }

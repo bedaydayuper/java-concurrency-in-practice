@@ -29,6 +29,7 @@ public class FutureTimeoutDemo {
             e.printStackTrace();
         } catch (TimeoutException e) {
             System.out.println("timeout !!!");
+            // 如果超时，则直接取消 future。
             stringFuture.cancel(true);
         }
     }

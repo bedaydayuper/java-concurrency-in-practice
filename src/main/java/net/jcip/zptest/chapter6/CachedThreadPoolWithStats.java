@@ -45,7 +45,7 @@ public class CachedThreadPoolWithStats {
                 public void run() {
                     // 模拟任务执行
                     try {
-                        Thread.sleep((long) (Math.random() * 2000));
+                        Thread.sleep((long) (Math.random() * 10000));
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     }
@@ -74,7 +74,7 @@ public class CachedThreadPoolWithStats {
 
         // 打印线程池状态
         int i = 0;
-        while (i < 1000) {
+        while (i < 100 && pool.getActiveThreadCount() > 0) {
             pool.printStats();
             Thread.sleep(1000);
             i++;

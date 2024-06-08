@@ -4,11 +4,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
 
-public class CustomThreadPoolExecutor implements ExecutorService {
+public class CustomThreadPoolExecutorBeforeAndAfterExecution implements ExecutorService {
 
     private final ExecutorService delegate;
 
-    public CustomThreadPoolExecutor(ExecutorService delegate) {
+    public CustomThreadPoolExecutorBeforeAndAfterExecution(ExecutorService delegate) {
         this.delegate = delegate;
     }
 
@@ -87,7 +87,7 @@ public class CustomThreadPoolExecutor implements ExecutorService {
 
     public static void main(String[] args) {
         ExecutorService executorService = Executors.newFixedThreadPool(4);
-        CustomThreadPoolExecutor customExecutor = new CustomThreadPoolExecutor(executorService);
+        CustomThreadPoolExecutorBeforeAndAfterExecution customExecutor = new CustomThreadPoolExecutorBeforeAndAfterExecution(executorService);
         customExecutor.execute(new Runnable() {
             public void run() {
                 System.out.println("Running task");

@@ -11,7 +11,7 @@ public class DeadLockDemo {
             Thread.sleep(100);
 
             synchronized (lock2) {
-                System.out.printf("thread1: holding lock 1 & 2");
+                System.out.println("thread1: holding lock 1 & 2");
             }
         }
     }
@@ -23,7 +23,7 @@ public class DeadLockDemo {
             Thread.sleep(100);
 
             synchronized (lock1) {
-                System.out.printf("thread2: holding lock 1 & 2");
+                System.out.println("thread2: holding lock 1 & 2");
             }
         }
     }
